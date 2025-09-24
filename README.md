@@ -1,5 +1,9 @@
 # 🤖 Web Test AI
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Node.js](https://img.shields.io/badge/Node.js-16%2B-green.svg)](https://nodejs.org/)
+[![Playwright](https://img.shields.io/badge/Playwright-1.40%2B-brightgreen.svg)](https://playwright.dev/)
+
 Gelişmiş web otomasyonu ve analiz botu ile yerel kontrol arayüzü. Bu proje, web sitelerini test etmek, analiz etmek ve performans raporları oluşturmak için tasarlanmıştır.
 
 ## 🚀 Özellikler
@@ -30,7 +34,7 @@ Gelişmiş web otomasyonu ve analiz botu ile yerel kontrol arayüzü. Bu proje, 
 
 ```bash
 # Proje dosyalarını indirin
-git clone [proje-repo-url]
+git clone https://github.com/yourusername/WebTestAI.git
 cd WebTestAI
 
 # Bağımlılıkları yükleyin
@@ -38,6 +42,9 @@ npm install
 
 # Playwright browser kurulumu
 npx playwright install chromium
+
+# .env dosyasını oluşturun
+cp .env.example .env
 ```
 
 ## 🎯 Kullanım
@@ -48,7 +55,7 @@ npm start
 ```
 
 ### 2. Dashboard Erişimi
-Tarayıcınızda şu adrese gidin: `http://localhost:3000`
+Tarayıcınızda şu adrese gidin: `http://localhost:3001`
 
 ### 3. Bot Testi
 ```bash
@@ -176,6 +183,27 @@ Herhangi bir sorun yaşarsanız:
 2. Browser developer tools kullanın
 3. Network sekmesinde hataları inceleyin
 
+## 🛠️ Teknoloji Stack
+
+### Backend
+- **Node.js**: Runtime environment
+- **Express.js**: Web framework
+- **Socket.io**: Real-time bidirectional communication
+- **Playwright**: Browser automation
+
+### Frontend
+- **HTML5/CSS3**: Modern UI design
+- **Vanilla JavaScript**: Client-side logic
+- **Socket.io Client**: Real-time updates
+
+### DevOps
+- **Git**: Version control
+- **npm**: Package management
+
+## 📝 Lisans
+
+Bu proje MIT lisansı altında lisanslanmıştır. Detaylar için [LICENSE](LICENSE) dosyasına bakın.
+
 ---
 
-**Not**: Bu bot test amaçlı geliştirilmiştir. Üretim ortamında kullanımdan önce güvenlik ve performans testlerini tamamlayın.
+**Not**: Bu bot test ve eğitim amaçlı geliştirilmiştir. Üretim ortamında kullanımdan önce güvenlik ve performans testlerini tamamlayın.
