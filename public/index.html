@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Test AI - Bot Kontrolü</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .control-panel {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .start-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+            width: 100%;
+        }
+
+        .start-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .start-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .card h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #ddd;
+        }
+
+        .status-indicator.running {
+            background: #4CAF50;
+            animation: pulse 2s infinite;
+        }
+
+        .status-indicator.error {
+            background: #f44336;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .log-container {
+            background: #1e1e1e;
+            color: #00ff00;
+            border-radius: 8px;
+            padding: 15px;
+            height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 2px 0;
+        }
+
+        .log-entry.error {
+            color: #ff6b6b;
+        }
+
+        .log-entry.success {
+            color: #51cf66;
+        }
+
+        .log-entry.info {
+            color: #74c0fc;
+        }
+
+        .report-section {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .bot-report {
+            border: 1px solid #e1e5e9;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .bot-report.success {
+            border-color: #4CAF50;
+            background: #f8fff8;
+        }
+
+        .bot-report.error {
+            border-color: #f44336;
+            background: #fff8f8;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 Web Test AI</h1>
+            <p>Gelişmiş Web Otomasyonu ve Analiz Botu</p>
+        </div>
+
+        <div class="control-panel">
+            <h2>Bot Kontrolü</h2>
+            <form id="testForm">
+                <div class="form-group">
+                    <label for="targetUrl">Hedef URL:</label>
+                    <input type="url" id="targetUrl" value="https://hasanarthuraltuntas.com.tr" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="userCount">Eş Zamanlı Bot Sayısı:</label>
+                    <select id="userCount">
+                        <option value="1">1 Bot</option>
+                        <option value="3">3 Bot</option>
+                        <option value="5" selected>5 Bot</option>
+                        <option value="10">10 Bot</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="start-btn" id="startBtn">
+                    🚀 Test Başlat
+                </button>
+            </form>
+        </div>
+
+        <div class="dashboard">
+            <div class="card">
+                <h3>
+                    <span class="status-indicator" id="statusIndicator"></span>
+                    Sistem Durumu
+                </h3>
+                <div id="systemStatus">Hazır</div>
+                <div class="stats">
+                    <div class="stat-item">
+                        <div class="stat-number" id="activeBots">0</div>
+                        <div class="stat-label">Aktif Bot</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="totalTests">0</div>
+                        <div class="stat-label">Toplam Test</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>📊 Anlık Aktivite</h3>
+                <div class="log-container" id="activityLog"></div>
+            </div>
+        </div>
+
+        <div class="report-section">
+            <h3>📋 Test Raporları</h3>
+            <div id="reportContainer">
+                <p style="text-align: center; color: #666; padding: 40px;">
+                    Henüz test çalıştırılmadı. Yukarıdaki formu kullanarak test başlatın.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const socket = io();
+        let currentTestId = null;
+        let activeBots = 0;
+        let totalTests = 0;
+
+        // DOM elements
+        const testForm = document.getElementById('testForm');
+        const startBtn = document.getElementById('startBtn');
+        const statusIndicator = document.getElementById('statusIndicator');
+        const systemStatus = document.getElementById('systemStatus');
+        const activityLog = document.getElementById('activityLog');
+        const reportContainer = document.getElementById('reportContainer');
+        const activeBotsCounter = document.getElementById('activeBots');
+        const totalTestsCounter = document.getElementById('totalTests');
+
+        // Form submission
+        testForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const url = document.getElementById('targetUrl').value;
+            const userCount = parseInt(document.getElementById('userCount').value);
+
+            startBtn.disabled = true;
+            startBtn.textContent = '🔄 Test Başlatılıyor...';
+
+            try {
+                const response = await fetch('/api/start-test', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        url,
+                        userCount,
+                        actions: [
+                            { type: 'wait', duration: 2000 }
+                        ]
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    currentTestId = result.testId;
+                    logActivity('info', `Test başlatıldı: ${url} (${userCount} bot)`);
+                } else {
+                    logActivity('error', `Test başlatma hatası: ${result.error}`);
+                }
+            } catch (error) {
+                logActivity('error', `Bağlantı hatası: ${error.message}`);
+            }
+        });
+
+        // Socket events
+        socket.on('test-started', (data) => {
+            statusIndicator.className = 'status-indicator running';
+            systemStatus.textContent = 'Test Çalışıyor';
+            activeBots = 0;
+            totalTests++;
+            updateCounters();
+            logActivity('success', `Test başladı: ${data.url}`);
+        });
+
+        socket.on('bot-update', (data) => {
+            if (data.type === 'status') {
+                activeBots = Math.max(0, activeBots);
+                updateCounters();
+            }
+
+            logActivity('info', `Bot ${data.botId}: ${data.message}`);
+        });
+
+        socket.on('test-completed', (report) => {
+            statusIndicator.className = 'status-indicator';
+            systemStatus.textContent = 'Test Tamamlandı';
+            activeBots = 0;
+            updateCounters();
+
+            startBtn.disabled = false;
+            startBtn.textContent = '🚀 Test Başlat';
+
+            displayReport(report);
+            logActivity('success', 'Test başarıyla tamamlandı!');
+        });
+
+        socket.on('test-failed', (report) => {
+            statusIndicator.className = 'status-indicator error';
+            systemStatus.textContent = 'Test Başarısız';
+            activeBots = 0;
+            updateCounters();
+
+            startBtn.disabled = false;
+            startBtn.textContent = '🚀 Test Başlat';
+
+            displayReport(report);
+            logActivity('error', `Test başarısız: ${report.error}`);
+        });
+
+        function logActivity(type, message) {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry ${type}`;
+            logEntry.textContent = `[${timestamp}] ${message}`;
+
+            activityLog.appendChild(logEntry);
+            activityLog.scrollTop = activityLog.scrollHeight;
+        }
+
+        function updateCounters() {
+            activeBotsCounter.textContent = activeBots;
+            totalTestsCounter.textContent = totalTests;
+        }
+
+        function displayReport(report) {
+            const reportElement = document.createElement('div');
+            reportElement.className = `bot-report ${report.status}`;
+
+            const successRate = report.results.filter(r => r.success).length / report.results.length * 100;
+            const totalErrors = report.results.reduce((sum, r) => sum + r.errors.length, 0);
+            const totalActions = report.results.reduce((sum, r) => sum + r.actions.length, 0);
+
+            reportElement.innerHTML = `
+                <h4>Test Raporu - ${new Date(report.startTime).toLocaleString()}</h4>
+                <p><strong>URL:</strong> ${report.url}</p>
+                <p><strong>Bot Sayısı:</strong> ${report.userCount}</p>
+                <p><strong>Durum:</strong> ${report.status === 'completed' ? '✅ Tamamlandı' : '❌ Başarısız'}</p>
+                <p><strong>Başarı Oranı:</strong> ${successRate.toFixed(1)}%</p>
+                <p><strong>Toplam Eylem:</strong> ${totalActions}</p>
+                <p><strong>Toplam Hata:</strong> ${totalErrors}</p>
+
+                <details style="margin-top: 15px;">
+                    <summary style="cursor: pointer; font-weight: bold;">Detayları Göster</summary>
+                    <div style="margin-top: 10px;">
+                        ${report.results.map((result, index) => `
+                            <div style="border-left: 3px solid ${result.success ? '#4CAF50' : '#f44336'}; padding-left: 10px; margin: 10px 0;">
+                                <strong>Bot ${result.botId}:</strong>
+                                <ul style="margin: 5px 0; padding-left: 20px;">
+                                    <li>Süre: ${result.duration}ms</li>
+                                    <li>Eylemler: ${result.actions.length}</li>
+                                    <li>Hatalar: ${result.errors.length}</li>
+                                    ${result.errors.length > 0 ? `
+                                        <li>Hata Detayları:
+                                            <ul style="margin-top: 5px;">
+                                                ${result.errors.map(error => `
+                                                    <li style="color: #f44336;">${error.type}: ${error.message}</li>
+                                                `).join('')}
+                                            </ul>
+                                        </li>
+                                    ` : ''}
+                                </ul>
+                            </div>
+                        `).join('')}
+                    </div>
+                </details>
+            `;
+
+            reportContainer.innerHTML = '';
+            reportContainer.appendChild(reportElement);
+        }
+
+        // Load existing reports
+        fetch('/api/reports')
+            .then(res => res.json())
+            .then(reports => {
+                reports.forEach(displayReport);
+                totalTests = reports.length;
+                updateCounters();
+            });
+    </script>
+</body>
+</html>
