@@ -208,17 +208,17 @@ class WebBot:
                 return {
                     title: document.title,
                     url: window.location.href,
-                    linkCount: document.querySelectorAll('a').length,
-                    formCount: document.querySelectorAll('form').length,
-                    buttonCount: document.querySelectorAll('button').length,
-                    inputCount: document.querySelectorAll('input').length,
-                    imageCount: document.querySelectorAll('img').length,
-                    hasServiceWorker: 'serviceWorker' in navigator,
+                    link_count: document.querySelectorAll('a').length,
+                    form_count: document.querySelectorAll('form').length,
+                    button_count: document.querySelectorAll('button').length,
+                    input_count: document.querySelectorAll('input').length,
+                    image_count: document.querySelectorAll('img').length,
+                    has_service_worker: 'serviceWorker' in navigator,
                     viewport: {
                         width: window.innerWidth,
                         height: window.innerHeight
                     },
-                    scrollHeight: document.body.scrollHeight,
+                    scroll_height: document.body.scrollHeight,
                     links: Array.from(document.querySelectorAll('a'))
                         .map(a => ({
                             text: a.textContent.trim(),
