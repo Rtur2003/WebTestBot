@@ -145,7 +145,7 @@ class WebBot:
 
             report.performance['load_time'] = load_time
             
-            if response:
+            if response and response.request and response.request.timing:
                 report.performance['response_time'] = response.request.timing.get('responseEnd', 0)
 
             if on_update:
@@ -218,7 +218,7 @@ class WebBot:
                         width: window.innerWidth,
                         height: window.innerHeight
                     },
-                    scroll_height: document.body.scrollHeight,
+                    scroll_height: document.body ? document.body.scrollHeight : 0,
                     links: Array.from(document.querySelectorAll('a'))
                         .map(a => ({
                             text: a.textContent.trim(),
