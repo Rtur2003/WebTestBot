@@ -145,8 +145,15 @@ class WebBot:
 
             report.performance['load_time'] = load_time
             
-            if response and response.request and response.request.timing:
-                report.performance['response_time'] = response.request.timing.get('responseEnd', 0)
+            if response and response.request:
+                try:
+                    timing = response.request.timing
+                    if timing and hasattr(timing, 'get'):
+                        report.performance['response_time'] = timing.get('responseEnd', 0)
+                    elif timing and hasattr(timing, 'responseEnd'):
+                        report.performance['response_time'] = getattr(timing, 'responseEnd', 0)
+                except (AttributeError, TypeError):
+                    pass
 
             if on_update:
                 on_update({
