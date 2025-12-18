@@ -8,7 +8,7 @@ better error handling, and cleaner architecture.
 from typing import Optional, Callable, Dict, List, Any
 from dataclasses import dataclass, field
 from datetime import datetime
-from playwright.async_api import async_playwright, Browser, BrowserContext, Page
+from playwright.async_api import async_playwright, Browser, BrowserContext, Page, Playwright
 from python_bot.config.models import BotConfig
 
 
@@ -63,15 +63,16 @@ class WebBot:
         self._browser: Optional[Browser] = None
         self._context: Optional[BrowserContext] = None
         self._page: Optional[Page] = None
+        self._playwright: Optional[Playwright] = None
 
     async def initialize(self) -> bool:
         """Initialize browser, context, and page."""
         try:
             await self.cleanup()
 
-            playwright = await async_playwright().start()
+            self._playwright = await async_playwright().start()
             
-            self._browser = await playwright.chromium.launch(
+            self._browser = await self._playwright.chromium.launch(
                 headless=self.config.browser.headless,
                 timeout=self.config.browser.timeout,
                 args=self.config.browser.args
@@ -338,3 +339,11 @@ class WebBot:
                 print(f'[WARN] Browser cleanup error: {error}')
             finally:
                 self._browser = None
+
+        if self._playwright:
+            try:
+                await self._playwright.stop()
+            except Exception as error:
+                print(f'[WARN] Playwright cleanup error: {error}')
+            finally:
+                self._playwright = None
