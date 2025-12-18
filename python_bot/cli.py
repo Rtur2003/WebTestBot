@@ -85,9 +85,9 @@ async def main() -> None:
     )
     parser.add_argument(
         '--headless',
-        action='store_true',
-        default=True,
-        help='Run in headless mode (default: True)'
+        action='store_false',
+        dest='headless',
+        help='Disable headless mode (default: headless enabled)'
     )
     
     args = parser.parse_args()
