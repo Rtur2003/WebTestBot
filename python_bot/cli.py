@@ -84,10 +84,10 @@ async def main() -> None:
         help='Number of concurrent bots (default: 1, max: 10)'
     )
     parser.add_argument(
-        '--headless',
+        '--no-headless',
         action='store_false',
         dest='headless',
-        help='Disable headless mode (default: headless enabled)'
+        help='Disable headless mode (run browser with visible window)'
     )
     
     args = parser.parse_args()
