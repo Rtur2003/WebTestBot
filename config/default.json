@@ -1,0 +1,77 @@
+{
+  "server": {
+    "port": 3001,
+    "host": "localhost",
+    "cors": {
+      "enabled": true,
+      "origins": ["http://localhost:3001"]
+    }
+  },
+  "bot": {
+    "browser": {
+      "headless": true,
+      "timeout": 60000,
+      "args": [
+        "--no-sandbox",
+        "--disable-dev-shm-usage",
+        "--disable-gpu"
+      ]
+    },
+    "context": {
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      "viewport": {
+        "width": 1366,
+        "height": 768
+      },
+      "timeout": 30000
+    },
+    "page": {
+      "defaultTimeout": 30000,
+      "navigationTimeout": 30000,
+      "waitUntil": "networkidle"
+    },
+    "concurrency": {
+      "maxBots": 10,
+      "minBots": 1,
+      "defaultBots": 1
+    }
+  },
+  "testing": {
+    "defaultUrl": "https://hasanarthuraltuntas.com.tr",
+    "retryAttempts": 3,
+    "retryDelay": 1000,
+    "actions": {
+      "scroll": {
+        "enabled": true,
+        "waitTime": 1000
+      },
+      "linkClick": {
+        "enabled": true,
+        "waitTime": 2000,
+        "maxAttempts": 1
+      },
+      "formInteraction": {
+        "enabled": true,
+        "waitTime": 500
+      }
+    }
+  },
+  "logging": {
+    "level": "info",
+    "console": true,
+    "file": {
+      "enabled": false,
+      "path": "logs/app.log"
+    }
+  },
+  "reports": {
+    "storage": {
+      "type": "memory",
+      "maxReports": 100
+    },
+    "retention": {
+      "enabled": false,
+      "days": 7
+    }
+  }
+}
