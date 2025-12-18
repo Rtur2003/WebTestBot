@@ -1,3 +1,5 @@
 """Configuration management with validation."""
 
-__all__ = ['BotConfig', 'get_config']
+from python_bot.config.models import BotConfig
+
+__all__ = ['BotConfig']
